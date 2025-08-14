@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
-const formidable = require('formidable'); // Importa a biblioteca formidable
+const formidable = require('formidable');
 const fs = require('fs'); // Importa o módulo File System para ler o arquivo
+
 
 // Desabilita a análise do body do Next.js para este endpoint
 // Isso é necessário para que o formidable possa processar a requisição completa.
@@ -19,25 +20,21 @@ const transporter = nodemailer.createTransport({
 });
 
 async function init(req, res) {
-   res.setHeader('Access-Control-Allow-Origin', '*');
+   res.setHeader('Access-Control-Allow-Origin', 'https://eco-recitec.com.br');
+   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+   // Se a requisição for do tipo OPTIONS (preflight), respondemos e terminamos aqui.
+   // Isso é um passo obrigatório para que os navegadores permitam a requisição POST.
    if (req.method === 'OPTIONS') {
-      res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
       res.status(200).end();
       return;
    }
 
    try {
-      // Cria uma nova instância da classe IncomingForm, a forma correta de usar o formidable em versões recentes.
       const form = new formidable.IncomingForm();
-
-      // Processa a requisição e retorna os campos e arquivos usando await, o que simplifica o código.
       const [fields, files] = await form.parse(req);
-      
-      // Acessa o comprovante de pagamento a partir dos arquivos
       const comprovantePagamento = files.payRecibe[0];
-
-      // Acessa os outros campos do formulário
       const sheetsName = fields.sheetsName[0];
       const nome = fields.nome[0];
       const email = fields.email[0];
