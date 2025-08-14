@@ -2,93 +2,85 @@ const nodemailer = require('nodemailer');
 const formidable = require('formidable');
 const fs = require('fs'); // Importa o módulo File System para ler o arquivo
 
-
-// Desabilita a análise do body do Next.js para este endpoint
-// Isso é necessário para que o formidable possa processar a requisição completa.
 export const config = {
-   api: {
-      bodyParser: false,
-   },
+  api: {
+    bodyParser: false,
+  },
 };
-
-const transporter = nodemailer.createTransport({
-   service: 'gmail', // Exemplo: 'gmail', 'outlook', etc. Ou use host/port para SMTP customizado
-   auth: {
-      user: process.env.EMAIL_USER, // Seu e-mail (definido em .env.local)
-      pass: process.env.EMAIL_PASS, // Sua senha de aplicativo ou senha do e-mail (definido em .env.local)
-   },
-});
 
 async function init(req, res) {
-   // Adicionado os headers CORS para aceitar qualquer origem
-   res.setHeader('Access-Control-Allow-Origin', '*');
-   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  // Libera CORS para qualquer origem
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-   // Se a requisição for do tipo OPTIONS (preflight), respondemos com 200 OK e terminamos aqui.
-   // Isso permite que o navegador continue com a requisição POST.
-   if (req.method === 'OPTIONS') {
-      res.status(200).end();
-      return;
-   }
+  // Se for preflight, responde e encerra
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
-   // Apenas processa a requisição se o método for POST.
-   if (req.method === 'POST') {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method Not Allowed' });
+  }
 
-      try {
-         const form = new formidable.IncomingForm();
-         const [fields, files] = await form.parse(req);
-         const comprovantePagamento = files.payRecibe[0];
-         const sheetsName = fields.sheetsName[0];
-         const nome = fields.nome[0];
-         const email = fields.email[0];
-         const telefone = fields.telefone[0];
-         const data = fields.data[0];
+  // Agora sim processa o formidable
+  const formidable = require('formidable');
+  const fs = require('fs');
+  const nodemailer = require('nodemailer');
 
-         const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: "celene.recitec@donaverde.com.br",
-            subject: 'Nova inscrição no site da EcoRecitec!',
-            html: `
-                    <p>Olá Celene,</p>
-                    <p>Sou o bot feito para enviar as inscrições e comprovantes!</p>
-                    <h2>Nova Inscrição Registrada no Evento</h2>
-                    <ul>
-                        <li><strong>Planilha:</strong> ${sheetsName}</li>
-                        <li><strong>Nome:</strong> ${nome}</li>
-                        <li><strong>Email:</strong> ${email}</li>
-                        <li><strong>Telefone:</strong> ${telefone}</li>
-                        <li><strong>Data:</strong> ${data}</li>                        
-                    </ul>                    
-                    <p>Comprovante de pagamento anexado.</p>
-                    <br>
-                    <br>                    
-                    <img src="https://eco-recitec.com.br/images/logo/logo-recitec-02-02.png" />
-                `,
-            // Anexa o arquivo ao e-mail
-            attachments: [
-               {
-                  filename: comprovantePagamento.originalFilename,
-                  path: comprovantePagamento.filepath,
-                  contentType: comprovantePagamento.mimetype,
-               },
-            ],
-         };
-         await transporter.sendMail(mailOptions);
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
 
-         // Remove o arquivo temporário após o envio do e-mail para evitar acúmulo de lixo
-         fs.unlinkSync(comprovantePagamento.filepath);
+  try {
+    const form = new formidable.IncomingForm();
+    const [fields, files] = await form.parse(req);
 
-         res.status(200).json({ message: "Menssagem enviada." });
+    const comprovantePagamento = files.payRecibe[0];
+    const sheetsName = fields.sheetsName[0];
+    const nome = fields.nome[0];
+    const email = fields.email[0];
+    const telefone = fields.telefone[0];
+    const data = fields.data[0];
 
-      } catch (error) {
-         console.error("Erro ao enviar e-mail:", error);
-         res.status(500).json({ error: error.message || "Erro interno do servidor ao enviar email." });
-      }
-   } else {
-      // Se o método não for POST ou OPTIONS, retorna um erro 405.
-      res.status(405).json({ message: 'Method Not Allowed' });
-   }
-};
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: "celene.recitec@donaverde.com.br",
+      subject: 'Nova inscrição no site da EcoRecitec!',
+      html: `
+        <h2>Nova Inscrição Registrada</h2>
+        <ul>
+          <li><strong>Planilha:</strong> ${sheetsName}</li>
+          <li><strong>Nome:</strong> ${nome}</li>
+          <li><strong>Email:</strong> ${email}</li>
+          <li><strong>Telefone:</strong> ${telefone}</li>
+          <li><strong>Data:</strong> ${data}</li>
+        </ul>
+        <p>Comprovante de pagamento anexado.</p>
+      `,
+      attachments: [
+        {
+          filename: comprovantePagamento.originalFilename,
+          path: comprovantePagamento.filepath,
+          contentType: comprovantePagamento.mimetype,
+        },
+      ],
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    fs.unlinkSync(comprovantePagamento.filepath);
+
+    res.status(200).json({ message: 'Mensagem enviada com sucesso.' });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message || 'Erro interno.' });
+  }
+}
 
 export default init;
