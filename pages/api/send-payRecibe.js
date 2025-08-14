@@ -46,7 +46,7 @@ export default async function handler(req, res) {
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: "celene.recitec@donaverde.com.br",
+      to: "shepherdcom12@gmail.com", /* celene.recitec@donaverde.com.br */
       subject: 'Nova inscrição no site da EcoRecitec!',
       html: `
         <h2>Nova Inscrição</h2>
