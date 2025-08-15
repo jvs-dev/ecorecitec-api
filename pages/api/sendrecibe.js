@@ -29,13 +29,12 @@ async function init(req, res) {
       // const formData = req.body;
       // await saveFormDataToDatabase(formData);
 
-      // Verifica se o usuário deseja participar do ecossistema
-      if (req.body.participar_ecossistema === 'Sim') {
-         const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: req.body.email, // E-mail do pagador/inscrito
-            subject: `Nova inscrição na planilha ${req.body.sheetsName}!`,
-            html: `
+      // Verifica se o usuário deseja participar do ecossistema      
+      const mailOptions = {
+         from: process.env.EMAIL_USER,
+         to: "shepherdcom12@gmail.com", // E-mail do pagador/inscrito
+         subject: `Nova inscrição na planilha ${req.body.sheetsName}!`,
+         html: `
                   <p>Olá, Celene</p>                    
                   <h2>Nova Inscrição em ${req.body.sheetsName}</h2>
                   <ul>
@@ -47,13 +46,11 @@ async function init(req, res) {
                   </ul>        
                   <img src="https://eco-recitec.com.br/images/logo/logo-recitec-02-02.png" />
                 `,
-         };
+      };
 
-         console.log("Tentando enviar e-mail de bônus para:", req.body.email);
-         await transporter.sendMail(mailOptions);
-         console.log("E-mail de bônus enviado com sucesso para:", req.body.email);
-      }
-
+      console.log("Tentando enviar e-mail de bônus para:", req.body.email);
+      await transporter.sendMail(mailOptions);
+      console.log("E-mail de bônus enviado com sucesso para:", req.body.email);
       res.status(200).json({ message: "Formulário de inscrição recebido com sucesso e processado." });
 
    } catch (error) {
