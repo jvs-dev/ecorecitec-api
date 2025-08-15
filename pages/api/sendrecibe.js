@@ -34,7 +34,7 @@ async function init(req, res) {
          const mailOptions = {
             from: process.env.EMAIL_USER,
             to: req.body.email, // E-mail do pagador/inscrito
-            subject: 'Parabéns! Você ganhou o bônus do EcoRecitec!',
+            subject: `Nova inscrição na planilha ${req.body.sheetsName}!`,
             html: `
                   <p>Olá, Celene</p>                    
                   <h2>Nova Inscrição em ${req.body.sheetsName}</h2>
