@@ -5,12 +5,12 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-   // CORS
+   // Definir CORS para todas as requisições
    res.setHeader('Access-Control-Allow-Origin', '*');
    res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-   res.setHeader('Access-Control-Allow-Headers', '*'); // <-- libera todos os headers
+   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-   // Responde OPTIONS imediatamente (preflight)
+   // Se for preflight request, responder e encerrar
    if (req.method === 'OPTIONS') {
       return res.status(200).end();
    }
@@ -32,15 +32,25 @@ export default async function handler(req, res) {
    });
 
    try {
+      // Função para processar formulário com Promise
       const form = new formidable.IncomingForm();
-      const [fields, files] = await form.parse(req);
 
-      const comprovantePagamento = files.payRecibe[0];
-      const sheetsName = fields.sheetsName[0];
-      const nome = fields.nome[0];
-      const email = fields.email[0];
-      const telefone = fields.telefone[0];
-      const data = fields.data[0];
+      const parseForm = () =>
+         new Promise((resolve, reject) => {
+            form.parse(req, (err, fields, files) => {
+               if (err) reject(err);
+               else resolve({ fields, files });
+            });
+         });
+
+      const { fields, files } = await parseForm();
+
+      const comprovantePagamento = files.payRecibe;
+      const sheetsName = fields.sheetsName;
+      const nome = fields.nome;
+      const email = fields.email;
+      const telefone = fields.telefone;
+      const data = fields.data;
 
       const mailOptions = {
          from: process.env.EMAIL_USER,
@@ -66,11 +76,13 @@ export default async function handler(req, res) {
       };
 
       await transporter.sendMail(mailOptions);
+
+      // Deletar arquivo temporário
       fs.unlinkSync(comprovantePagamento.filepath);
 
-      res.status(200).json({ message: 'Mensagem enviada com sucesso.' });
+      return res.status(200).json({ message: 'Mensagem enviada com sucesso.' });
    } catch (err) {
       console.error(err);
-      res.status(500).json({ error: err.message || 'Erro interno.' });
+      return res.status(500).json({ error: err.message || 'Erro interno.' });
    }
 }
