@@ -5,22 +5,20 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-   // CORS liberado antes de tudo
+   // CORS
    res.setHeader('Access-Control-Allow-Origin', '*');
    res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+   res.setHeader('Access-Control-Allow-Headers', '*'); // <-- libera todos os headers
 
-   // Responde imediatamente OPTIONS (preflight)
+   // Responde OPTIONS imediatamente (preflight)
    if (req.method === 'OPTIONS') {
       return res.status(200).end();
    }
 
-   // Bloqueia métodos que não sejam POST
    if (req.method !== 'POST') {
       return res.status(405).json({ message: 'Method Not Allowed' });
    }
 
-   // Daqui pra frente processa o formidable + nodemailer
    const nodemailer = require('nodemailer');
    const formidable = require('formidable');
    const fs = require('fs');
@@ -46,7 +44,7 @@ export default async function handler(req, res) {
 
       const mailOptions = {
          from: process.env.EMAIL_USER,
-         to: "shepherdcom12@gmail.com", /* celene.recitec@donaverde.com.br */
+         to: "shepherdcom12@gmail.com",
          subject: 'Nova inscrição no site da EcoRecitec!',
          html: `
         <h2>Nova Inscrição</h2>

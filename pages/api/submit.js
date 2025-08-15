@@ -37,7 +37,7 @@ async function init (req, res) {
             subject: 'Parabéns! Você ganhou o bônus do EcoRecitec!',
             html: `
                     <p>Olá ${req.body.nome},</p>
-                    <p>Parabéns! Sua inscrição no congresso EcoRecitec foi recebida e, como você optou por participar do ecossistetma circular tech skills de educação continuada em economia circular, você ganhou o bônus de 4 meses de integração gratuita ao nosso ecossistema!</p>
+                    <p>Parabéns! Sua inscrição no congresso EcoRecitec foi recebida e, como você optou por participar do ecossistetma circular tech skills de educação continuada em economia circular, você ganhou o bônus de ${req.body.ecossystMoths} de integração gratuita ao nosso ecossistema!</p>
                     <p>Garanta seu bônus clicando no link abaixo e preenchendo o formulario.</p>
                     <a href="https://forms.gle/WHeDhUsUL2EsseXc8">https://forms.gle/WHeDhUsUL2EsseXc8</a>
                     <br>
