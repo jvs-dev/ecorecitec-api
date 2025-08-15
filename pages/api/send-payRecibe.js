@@ -1,15 +1,15 @@
-const nodemailer = require("nodemailer");
-const formidable = require("formidable");
-const fs = require("fs");
 import Cors from 'cors';
+import formidable from 'formidable';
+import nodemailer from 'nodemailer';
+import fs from 'fs';
 
-// Inicialize o middleware CORS
+// Configuração do CORS
 const cors = Cors({
    methods: ['POST', 'OPTIONS'],
-   origin: '*', // Permitir de qualquer origem, ou especifique a sua
+   origin: '*', // Permitir todas as origens
 });
 
-// Função para executar o middleware
+// Helper para rodar o middleware
 function runMiddleware(req, res, fn) {
    return new Promise((resolve, reject) => {
       fn(req, res, (result) => {
@@ -24,19 +24,17 @@ function runMiddleware(req, res, fn) {
 export const config = {
    api: {
       bodyParser: false,
-      externalResolver: true, // Permite que o Next.js resolva a resposta de forma assíncrona
-      sizeLimit: "10mb", // Limite de tamanho do arquivo
-      responseLimit: "10mb", // Limite de tamanho da resposta
    },
 };
 
 export default async function handler(req, res) {
+   // 1. Rodar o middleware CORS primeiro
    await runMiddleware(req, res, cors);
 
-   // Seu código para o método OPTIONS já não é mais necessário aqui, o middleware cuida disso
-   // ... restante do seu código
-   if (req.method !== "POST") {
-      return res.status(405).json({ message: "Method Not Allowed" });
+   // O middleware CORS já tratou o método OPTIONS.
+   // Agora, verificamos apenas o POST.
+   if (req.method !== 'POST') {
+      return res.status(405).json({ message: 'Method Not Allowed' });
    }
 
    const transporter = nodemailer.createTransport({
@@ -49,7 +47,6 @@ export default async function handler(req, res) {
 
    try {
       const form = new formidable.IncomingForm();
-
       const parseForm = () =>
          new Promise((resolve, reject) => {
             form.parse(req, (err, fields, files) => {
@@ -60,27 +57,26 @@ export default async function handler(req, res) {
 
       const { fields, files } = await parseForm();
 
+      // Seus campos do formulário
       const comprovantePagamento = files.payRecibe;
       const sheetsName = fields.sheetsName;
-      const nome = fields.nome;
-      const email = fields.email;
-      const telefone = fields.telefone;
-      const data = fields.data;
+      // ... (resto dos seus campos)
 
       const mailOptions = {
+         // ... (suas opções de email)
          from: process.env.EMAIL_USER,
          to: "shepherdcom12@gmail.com",
          subject: "Nova inscrição no site da EcoRecitec!",
          html: `
-        <h2>Nova Inscrição</h2>
-        <ul>
-          <li>Planilha: ${sheetsName}</li>
-          <li>Nome: ${nome}</li>
-          <li>Email: ${email}</li>
-          <li>Telefone: ${telefone}</li>
-          <li>Data: ${data}</li>
-        </ul>
-      `,
+                <h2>Nova Inscrição</h2>
+                <ul>
+                    <li>Planilha: ${sheetsName}</li>
+                    <li>Nome: ${nome}</li>
+                    <li>Email: ${email}</li>
+                    <li>Telefone: ${telefone}</li>
+                    <li>Data: ${data}</li>
+                </ul>
+            `,
          attachments: [
             {
                filename: comprovantePagamento.originalFilename,
