@@ -1,7 +1,25 @@
 const nodemailer = require("nodemailer");
 const formidable = require("formidable");
 const fs = require("fs");
-const path = require("path");
+import Cors from 'cors';
+
+// Inicialize o middleware CORS
+const cors = Cors({
+   methods: ['POST', 'OPTIONS'],
+   origin: '*', // Permitir de qualquer origem, ou especifique a sua
+});
+
+// Função para executar o middleware
+function runMiddleware(req, res, fn) {
+   return new Promise((resolve, reject) => {
+      fn(req, res, (result) => {
+         if (result instanceof Error) {
+            return reject(result);
+         }
+         return resolve(result);
+      });
+   });
+}
 
 export const config = {
    api: {
@@ -13,17 +31,12 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-   // CORS - liberar tudo
-   res.setHeader("Access-Control-Allow-Origin", "*");
-   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-   res.setHeader(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization, X-Requested-With, Accept"
-   );
+   await runMiddleware(req, res, cors);
 
-   // Resposta rápida para preflight OPTIONS
-   if (req.method === "OPTIONS") {
-      return res.status(200).end();
+   // Seu código para o método OPTIONS já não é mais necessário aqui, o middleware cuida disso
+   // ... restante do seu código
+   if (req.method !== "POST") {
+      return res.status(405).json({ message: "Method Not Allowed" });
    }
 
    const transporter = nodemailer.createTransport({
