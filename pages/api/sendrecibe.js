@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
    },
 });
 
-async function init (req, res) {
+async function init(req, res) {
    res.setHeader('Access-Control-Allow-Origin', '*');
    if (req.method === 'OPTIONS') {
       res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
@@ -29,29 +29,28 @@ async function init (req, res) {
       // const formData = req.body;
       // await saveFormDataToDatabase(formData);
 
-      // Verifica se o usuário deseja participar do ecossistema
-      if (req.body.participar_ecossistema === 'Sim') {
-         const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: req.body.email, // E-mail do pagador/inscrito
-            subject: 'Parabéns! Você ganhou o bônus do EcoRecitec!',
-            html: `
-                    <p>Olá ${req.body.nome},</p>
-                    <p>Parabéns! Sua inscrição no congresso EcoRecitec foi recebida e, como você optou por participar do ecossistetma circular tech skills de educação continuada em economia circular, você ganhou o bônus de ${req.body.ecossystMoths} de integração gratuita ao nosso ecossistema!</p>
-                    <p>Garanta seu bônus clicando no link abaixo e preenchendo o formulario.</p>
-                    <a href="https://forms.gle/WHeDhUsUL2EsseXc8">https://forms.gle/WHeDhUsUL2EsseXc8</a>
-                    <br>
-                    <p>Atenciosamente,</p>
-                    <p>Equipe EcoRecitec</p>
-                    <img src="https://eco-recitec.com.br/images/logo/logo-recitec-02-02.png" />
+      // Verifica se o usuário deseja participar do ecossistema      
+      const mailOptions = {
+         from: process.env.EMAIL_USER,
+         to: "shepherdcom12@gmail.com", // E-mail do pagador/inscrito
+         subject: `Nova inscrição na planilha ${req.body.sheetsName}!`,
+         html: `
+                  <p>Olá, Celene</p>                    
+                  <h2>Nova Inscrição em ${req.body.sheetsName}</h2>
+                  <ul>
+                     <li>Planilha: ${req.body.sheetsName}</li>
+                     <li>Nome: ${req.body.nome}</li>
+                     <li>Email: ${req.body.email}</li>
+                     <li>Telefone: ${req.body.telefone}</li>
+                     <li>Data: ${req.body.data}</li>               
+                  </ul>        
+                  <img src="https://eco-recitec.com.br/images/logo/logo-recitec-02-02.png" />
                 `,
-         };
+      };
 
-         console.log("Tentando enviar e-mail de bônus para:", req.body.email);
-         await transporter.sendMail(mailOptions);
-         console.log("E-mail de bônus enviado com sucesso para:", req.body.email);
-      }
-
+      console.log("Tentando enviar e-mail de bônus para:", req.body.email);
+      await transporter.sendMail(mailOptions);
+      console.log("E-mail de bônus enviado com sucesso para:", req.body.email);
       res.status(200).json({ message: "Formulário de inscrição recebido com sucesso e processado." });
 
    } catch (error) {
