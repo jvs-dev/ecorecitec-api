@@ -46,7 +46,7 @@ async function init(req, res) {
 
       const mailOptions = {
          from: process.env.EMAIL_USER,
-         to: "shepherdcom12@gmail.com", // E-mail do pagador/inscrito
+         to: "celene.recitec@donaverde.com.br",
          subject: `Nova inscrição na planilha ${sheetsName}!`,
          html: `
                   <p>Olá, Celene</p>                    
@@ -60,7 +60,7 @@ async function init(req, res) {
                   </ul>        
                   <img src="https://eco-recitec.com.br/images/logo/logo-recitec-02-02.png" />
                 `,
-         
+
          attachments: [
             {
                filename: comprovantePagamento.originalFilename,
