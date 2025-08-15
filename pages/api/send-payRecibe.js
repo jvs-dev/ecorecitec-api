@@ -1,6 +1,14 @@
+const nodemailer = require("nodemailer");
+const formidable = require("formidable");
+const fs = require("fs");
+const path = require("path");
+
 export const config = {
    api: {
-      bodyParser: false, // importante para formidable
+      bodyParser: false,
+      externalResolver: true, // Permite que o Next.js resolva a resposta de forma assíncrona
+      sizeLimit: "10mb", // Limite de tamanho do arquivo
+      responseLimit: "10mb", // Limite de tamanho da resposta
    },
 };
 
@@ -17,15 +25,6 @@ export default async function handler(req, res) {
    if (req.method === "OPTIONS") {
       return res.status(200).end();
    }
-
-   // Bloquear métodos não permitidos
-   if (req.method !== "POST") {
-      return res.status(405).json({ message: "Method Not Allowed" });
-   }
-
-   const nodemailer = require("nodemailer");
-   const formidable = require("formidable");
-   const fs = require("fs");
 
    const transporter = nodemailer.createTransport({
       service: "gmail",
