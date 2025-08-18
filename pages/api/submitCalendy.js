@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
    },
 });
 
-async function init (req, res) {
+async function init(req, res) {
    res.setHeader('Access-Control-Allow-Origin', '*');
    if (req.method === 'OPTIONS') {
       res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
@@ -29,28 +29,26 @@ async function init (req, res) {
       // const formData = req.body;
       // await saveFormDataToDatabase(formData);
 
-      // Verifica se o usuário deseja participar do ecossistema
-      if (req.body.participar_ecossistema === 'Sim') {
-         const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: req.body.email, // E-mail do pagador/inscrito
-            subject: 'Parabéns! Você ganhou o bônus do EcoRecitec!',
-            html: `
-                    <p>Olá ${req.body.nome},</p>
-                    <p>Parabéns por finalizar sua inscrição!</p>
-                    <p>Agora agende uma reunião com Celene Brito ou mande um E-mail para confirmar sua inscrição.</p>
-                    <a href="https://calendly.com/celene-recitec/30min">https://calendly.com/celene-recitec/30min</a>
-                    <br>
-                    <p>Atenciosamente,</p>
-                    <p>Equipe EcoRecitec</p>
-                    <img src="https://eco-recitec.com.br/images/logo/logo-recitec-02-02.png" />
-                `,
-         };
+      // Verifica se o usuário deseja participar do ecossistema      
+      const mailOptions = {
+         from: process.env.EMAIL_USER,
+         to: req.body.email, // E-mail do pagador/inscrito
+         subject: 'Parabéns por se tornar um parceiro da EcoRecitec!',
+         html: `
+            <p>Olá ${req.body.nome},</p>
+            <p>Parabéns por finalizar sua inscrição!</p>
+            <p>Agora agende uma reunião com Celene Brito ou mande um E-mail para confirmar sua inscrição.</p>
+            <a href="https://calendly.com/celene-recitec/30min">https://calendly.com/celene-recitec/30min</a>
+            <br>
+            <p>Atenciosamente,</p>
+            <p>Equipe EcoRecitec</p>
+            <img src="https://eco-recitec.com.br/images/logo/logo-recitec-02-02.png" />
+         `,
+      };
 
-         console.log("Tentando enviar e-mail de bônus para:", req.body.email);
-         await transporter.sendMail(mailOptions);
-         console.log("E-mail de bônus enviado com sucesso para:", req.body.email);
-      }
+      console.log("Tentando enviar e-mail de bônus para:", req.body.email);
+      await transporter.sendMail(mailOptions);
+      console.log("E-mail de bônus enviado com sucesso para:", req.body.email);
 
       res.status(200).json({ message: "Formulário de inscrição recebido com sucesso e processado." });
 
