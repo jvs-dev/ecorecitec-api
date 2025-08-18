@@ -37,7 +37,7 @@ async function init(req, res) {
          html: `
             <p>Olá ${req.body.nome},</p>
             <p>Parabéns por finalizar sua inscrição!</p>
-            <p>Agora agende uma reunião com Celene Brito ou mande um E-mail para confirmar sua inscrição.</p>
+            <p>Agora agende uma reunião com Celene Brito ou <strong>entre em contato</strong> para confirmar sua inscrição.</p>
             <a href="https://calendly.com/celene-recitec/30min">https://calendly.com/celene-recitec/30min</a>
             <br>
             <p>Atenciosamente,</p>
