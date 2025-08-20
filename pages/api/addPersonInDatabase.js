@@ -54,60 +54,82 @@ async function handler(req, res) {
    try {
       console.log("Dados recebidos no backend:", req.body);
 
-      if (!req.body.email || !req.body.nome || !req.body.cpf) {
-         console.warn('Dados de pessoa incompletos, pulando:', req.body);
-         return { status: 'skipped:' + req.body };
+      if (!Array.isArray(req.body)) {
+         return res.status(400).json({ error: 'O corpo da requisição deve ser um array de pessoas.' });
       }
 
-      const docRef = await addDoc(collection(db, "inscritos"), {
-         "nome": req.body.nome,
-         "email": req.body.email,
-         "cpf": req.body.cpf,
-         "telefone": req.body.telefone,
-         "pais": req.body.pais,
-         "cidade": req.body.cidade,
-         "autorização imagem": req.body.participar_teste,
-         "tratamento de dados": req.body.disp_teste,
+      const emailPromises = req.body.map(async (person) => {
+         if (!person.cpf || !person.email || !person.nome) {
+            console.warn('Dados de pessoa incompletos, pulando:', person);
+            return { status: 'skipped', person };
+         }
 
+         const docRef = await addDoc(collection(db, "inscritos"), {
+            "nome": person.nome,
+            "email": person.email,
+            "cpf": person.cpf,
+            "telefone": person.telefone,
+            "pais": person.pais,
+            "cidade": person.cidade,
+            "autorização imagem": person.participar_teste,
+            "tratamento de dados": person.disp_teste,
+
+         });
+
+         const qrCodeBuffer = await generateQRCodeBuffer(docRef.id);
+         if (!qrCodeBuffer) {
+            console.error(`Falha ao gerar QR Code para ${docRef.id}, pulando envio do e-mail.`);
+            return { status: 'error', person, error: 'Falha ao gerar o QR Code' };
+         }
+
+         const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: person.email,
+            subject: 'Aqui está seu QR Code para o evento Circular Tech Skills!',
+            html: `
+                    <p>Olá ${person.nome},</p>
+                    <p>Parabéns por finalizar a inscrição! Para garantir sua entrada no evento, guarde este QR Code que deverá ser mostrado na portaria.</p>
+                    <img src="cid:qrcode_image" alt="QR Code para ${docRef.id}" />
+                    <p>Código: <strong>${docRef.id}</strong></p>
+                    <br>
+                    <p>Atenciosamente,</p>
+                    <p>Equipe EcoRecitec</p>
+                    <img src="https://eco-recitec.com.br/images/logo/logo-recitec-02-02.png" alt="Logo EcoRecitec" style="width: 150px;" />
+                `,
+            // Adicionando o anexo do QR Code
+            attachments: [{
+               filename: `qrcode-${person.id}.png`,
+               content: qrCodeBuffer,
+               contentType: 'image/png',
+               cid: 'qrcode_image' // Referência no HTML (Content-ID)
+            }]
+         };
+
+         try {
+            await transporter.sendMail(mailOptions);
+            console.log("E-mail enviado com sucesso para:", person.email);
+            return { status: 'success', person };
+         } catch (mailError) {
+            console.error(`Erro ao enviar e-mail para ${person.email}:`, mailError);
+            return { status: 'error', person, error: mailError.message };
+         }
       });
 
-      const qrCodeBuffer = await generateQRCodeBuffer(docRef.id);
-      if (!qrCodeBuffer) {
-         console.error(`Falha ao gerar QR Code para ${docRef.id}, pulando envio do e-mail.`);
-         return { status: 'error' + req.body, error: 'Falha ao gerar o QR Code' };
-      }
+      const results = await Promise.all(emailPromises);
 
-      const mailOptions = {
-         from: process.env.EMAIL_USER,
-         to: req.body.email,
-         subject: 'Aqui está seu QR Code para o evento Circular Tech Skills!',
-         html: `
-            <p>Olá ${req.body.nome},</p>
-            <p>Estamos cada vez mais perto do grandioso dia! Para garantir sua entrada no evento, guarde este QR Code que deverá ser mostrado na portaria.</p>
-            <img src="cid:qrcode_image" alt="QR Code para ${docRef.id}" />
-            <p>Código: <strong>${docRef.id}</strong></p>
-            <br>
-            <p>Atenciosamente,</p>
-            <p>Equipe EcoRecitec</p>
-            <img src="https://eco-recitec.com.br/images/logo/logo-recitec-02-02.png" alt="Logo EcoRecitec" style="width: 150px;" />
-         `,
-         // Adicionando o anexo do QR Code
-         attachments: [{
-            filename: `qrcode-${docRef.id}.png`,
-            content: qrCodeBuffer,
-            contentType: 'image/png',
-            cid: 'qrcode_image' // Referência no HTML (Content-ID)
-         }]
-      };
+      const successCount = results.filter(r => r.status === 'success').length;
+      const errorCount = results.filter(r => r.status === 'error').length;
+      const skippedCount = results.filter(r => r.status === 'skipped').length;
+      const errors = results.filter(r => r.status === 'error');
 
-      try {
-         await transporter.sendMail(mailOptions);
-         console.log("E-mail enviado com sucesso para:", req.body.email);
-         return { status: 'success' + req.body };
-      } catch (mailError) {
-         console.error(`Erro ao enviar e-mail para ${req.body.email}:`, mailError);
-         return { status: 'error' + req.body, error: mailError.message };
-      }
+      res.status(200).json({
+         message: "Processamento de e-mails concluído.",
+         totalEmails: req.body.length,
+         success: successCount,
+         errors: errorCount,
+         skipped: skippedCount,
+         details: errors,
+      });
 
    } catch (error) {
       console.error("Erro geral no servidor:", error);
