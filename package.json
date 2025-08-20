@@ -12,6 +12,7 @@
   "type": "module",
   "dependencies": {
     "cors": "^2.8.5",
+    "firebase": "^12.1.0",
     "formidable": "^3.5.4",
     "googleapis": "^154.0.0",
     "mercadopago": "^2.8.0",
