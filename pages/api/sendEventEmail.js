@@ -51,7 +51,7 @@ async function handler(req, res) {
                   Em um prazo de até 8 dias úteis estaremos  enviando os certificados.</p>
               `,
               attachments: [{
-                  filename: `video-agradecimento.mp4`, // 3. Corrija o nome do arquivo
+                  filename: `video_congresso.mp4`, // 3. Corrija o nome do arquivo
                   path: videoPath,                      // 4. Use a propriedade 'path' com o caminho absoluto
                   contentType: 'video/mp4',
               }]
