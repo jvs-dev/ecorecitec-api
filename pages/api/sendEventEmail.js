@@ -33,7 +33,7 @@ async function handler(req, res) {
          const mailOptions = {
             from: process.env.EMAIL_USER,
             to: person.email,
-            subject: 'Aqui está seu QR Code para o evento Circular Tech Skills!',
+            subject: 'Agradecemos Sua Participação!',
             html: `
                     <p>Olá ${person.nome},</p>
                     <p>Nós da EcoRecitec – Economia Circular, Sustentabilidade e Tecnologia, em parceria com a FIEB – Federação das Indústrias do Estado da Bahia, agradecemos profundamente sua presença no I Congresso Internacional Circular Tech Skills, realizado nos dias 4 e 5 de setembro de 2025.<br>
@@ -46,9 +46,9 @@ async function handler(req, res) {
                      Em um prazo de até 8 dias úteis estaremos  enviando os certificados.</p>
                   `,
             attachments: [{
-               filename: `qrcode-${person.id}.png`,
-               contentType: 'image/png',
-               cid: 'qrcode_image'
+               filename: `video-agradecimento.png`,
+               contentType: 'video/mp4',
+               cid: 'agradecimento_video'
             }]
          };
          try {
