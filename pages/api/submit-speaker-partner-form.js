@@ -4,10 +4,10 @@ import Cors from 'cors';
 
 const cors = Cors({
    methods: ['POST', 'GET', 'HEAD'],
-   origin: '*', // Permite requisições de qualquer origem. Em produção, você deve restringir isso ao seu domínio.
+   origin: '*',
 });
 
-// Helper para executar o middleware CORS
+
 function runMiddleware(req, res, fn) {
    return new Promise((resolve, reject) => {
       fn(req, res, (result) => {
@@ -20,12 +20,12 @@ function runMiddleware(req, res, fn) {
 }
 
 export default async function handler(req, res) {
-   await runMiddleware(req, res, cors); // Executa o middleware CORS
+   await runMiddleware(req, res, cors);
 
    if (req.method !== 'POST') {
       return res.status(405).json({ message: 'Method Not Allowed' });
    }
-
+   let date = new Date();
    const {
       nome, telefone, email, pais, cidade, cpf, linkedin, empresa, cargo,
       participationType, tituloPalestra, resumoPalestra, miniCurriculo,
@@ -35,25 +35,25 @@ export default async function handler(req, res) {
    } = req.body;
 
    try {
-      // 1. Autenticação com a API do Google Sheets
+
       const auth = new google.auth.GoogleAuth({
          credentials: {
             client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-            // Substitua '\\n' por '\n' real se sua chave privada estiver com esses caracteres escapados
+
             private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
          },
-         scopes: ['https://www.googleapis.com/auth/spreadsheets'], // Escopo para acesso a planilhas
+         scopes: ['https://www.googleapis.com/auth/spreadsheets'],
       });
 
       const authClient = await auth.getClient();
       const sheets = google.sheets({ version: 'v4', auth: authClient });
 
       const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-      const range = 'PALESTRANTES!A:Z'; // Nome da aba e range. Adapte 'PALESTRANTES' se sua aba tiver outro nome.
+      const range = 'PALESTRANTES!A:Z';
 
-      // Garante que a ordem dos dados corresponda aos cabeçalhos da sua planilha
+
       const rowData = [
-         new Date().toLocaleDateString('pt-BR'), // Data de envio
+         new Date().toLocaleDateString('pt-BR'),
          nome,
          telefone,
          email,
@@ -76,11 +76,11 @@ export default async function handler(req, res) {
          expectativas
       ];
 
-      // Inserir dados na planilha
+
       await sheets.spreadsheets.values.append({
          spreadsheetId,
          range,
-         valueInputOption: 'RAW', // Mantém o formato original do valor
+         valueInputOption: 'RAW',
          resource: {
             values: [rowData],
          },
@@ -88,15 +88,13 @@ export default async function handler(req, res) {
 
       console.log('Dados do formulário adicionados à planilha do Google Sheets.');
 
-      // Enviar e-mail (se o usuário desejar participar do ecossistema)
-      // Reutilizando o objeto do corpo da requisição para as APIs externas
-      const formObject = req.body; // O corpo da requisição já contém todos os dados do formulário
+      const formObject = req.body;
 
       let emailSent = false;
       if (formObject.participar_ecossistema === "Sim") {
          console.log("Usuário deseja participar do ecossistema. Enviando e-mail...");
          try {
-            const emailResponse = await fetch("https://ecorecitec-api.vercel.app/api/submit", { // Endpoint da sua API de e-mail
+            const emailResponse = await fetch("https://ecorecitec-api.vercel.app/api/submit", {
                method: 'POST',
                headers: {
                   'Content-Type': 'application/json',
