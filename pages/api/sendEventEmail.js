@@ -47,6 +47,7 @@ async function handler(req, res) {
                   `,
             attachments: [{
                filename: `video-agradecimento.png`,
+               content: './video_congresso.mp4',
                contentType: 'video/mp4',
                cid: 'agradecimento_video'
             }]
